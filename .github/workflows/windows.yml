@@ -33,6 +33,9 @@ jobs:
         with:
           version: latest
 
+      - name: Add LLVM to PATH
+        run: echo "C:\Program Files\LLVM\bin" >> $env:GITHUB_PATH
+
       # ------------------------------------------------------------
       # Ninja
       # ------------------------------------------------------------
@@ -70,7 +73,7 @@ jobs:
       # Configure
       # ------------------------------------------------------------
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_MAKE_PROGRAM="C:/ProgramData/chocolatey/bin/ninja.exe" -DCMAKE_TOOLCHAIN_FILE="cmake/toolchain-clang-cl.cmake" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install "-DSDL3_VERSION=${{ env.SDL_VERSION }}"
+        run: cmake -S . -B build -G Ninja -DCMAKE_MAKE_PROGRAM="C:/ProgramData/chocolatey/bin/ninja.exe" -DCMAKE_C_COMPILER="C:/Program Files/LLVM/bin/clang-cl.exe" -DCMAKE_CXX_COMPILER="C:/Program Files/LLVM/bin/clang-cl.exe" -DCMAKE_TOOLCHAIN_FILE="cmake/toolchain-clang-cl.cmake" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install "-DSDL3_VERSION=${{ env.SDL_VERSION }}"
 
       # ------------------------------------------------------------
       # Build
