@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      sdl_version:
+        description: 'SDL3 version to build'
+        required: false
+        default: '3.2.1'
 
 env:
   SDL_VERSION: 3.2.1
@@ -28,13 +34,13 @@ jobs:
           version: latest
 
       # ------------------------------------------------------------
-      # CMake + Ninja (modern, safe)
+      # CMake + Ninja
       # ------------------------------------------------------------
       - name: Setup CMake and Ninja
         uses: lukka/get-cmake@v3.31.6
 
       # ------------------------------------------------------------
-      # Sanity check (optional but useful)
+      # Toolchain verification
       # ------------------------------------------------------------
       - name: Toolchain versions
         run: |
@@ -43,14 +49,19 @@ jobs:
           clang-cl --version
 
       # ------------------------------------------------------------
-      # Tag check (optional)
+      # Tag check
       # ------------------------------------------------------------
       - name: Verify tag matches SDL version
+        if: startsWith(github.ref, 'refs/tags/')
         shell: pwsh
         run: |
-          if (-not "${{ github.ref_name }}".StartsWith("v${{ env.SDL_VERSION }}+")) {
-            Write-Error "Tag must be v${{ env.SDL_VERSION }}+<rev>"
+          $tag = "${{ github.ref_name }}"
+          $expected = "v${{ env.SDL_VERSION }}+"
+          if (-not $tag.StartsWith($expected)) {
+            Write-Error "Tag '$tag' must start with '$expected'"
+            exit 1
           }
+          Write-Host "Tag '$tag' is valid"
 
       # ------------------------------------------------------------
       # Configure
@@ -61,29 +72,44 @@ jobs:
           -G Ninja
           -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-clang-cl.cmake
           -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_INSTALL_PREFIX=install
+          -DSDL3_VERSION=${{ env.SDL_VERSION }}
 
       # ------------------------------------------------------------
       # Build
       # ------------------------------------------------------------
       - name: Build
-        run: cmake --build build
+        run: cmake --build build --config Release
 
       # ------------------------------------------------------------
       # Install
       # ------------------------------------------------------------
       - name: Install
-        run: cmake --install build --prefix install
+        run: cmake --install build
 
       # ------------------------------------------------------------
       # Package
       # ------------------------------------------------------------
       - name: Package
-        run: tar -caf sdl3-windows-clang-cl.zip install
+        run: |
+          cd install
+          tar -caf ../sdl3-windows-clang-cl.zip *
 
       # ------------------------------------------------------------
-      # Release
+      # Upload Artifact (for workflow_dispatch)
+      # ------------------------------------------------------------
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdl3-windows-clang-cl
+          path: sdl3-windows-clang-cl.zip
+
+      # ------------------------------------------------------------
+      # Release (only on tag push)
       # ------------------------------------------------------------
       - name: Upload Release Asset
-        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
         with:
           files: sdl3-windows-clang-cl.zip
+          generate_release_notes: true

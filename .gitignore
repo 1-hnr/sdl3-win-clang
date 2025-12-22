@@ -1,0 +1,34 @@
+# Build directories
+build/
+install/
+out/
+cmake-build-*/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+
+# Package output
+*.zip
+*.tar.gz
+*.7z
+
+# IDE and editor files
+.vs/
+.vscode/
+*.suo
+*.user
+*.sln
+*.vcxproj*
+.idea/
+
+# Claude Code settings
+.claude/
+
+# Project documentation (local only)
+prompt.md
+rules.md
+skills.md
