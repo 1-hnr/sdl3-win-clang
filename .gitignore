@@ -25,10 +25,6 @@ CTestTestfile.cmake
 *.vcxproj*
 .idea/
 
-# Claude Code settings
-.claude/
-
-# Project documentation (local only)
-prompt.md
-rules.md
-skills.md
+# Claude Code local settings (personal, not shared)
+.claude/settings.local.json
+CLAUDE.local.md
