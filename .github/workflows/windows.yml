@@ -37,7 +37,9 @@ jobs:
       # Ninja
       # ------------------------------------------------------------
       - name: Install Ninja
-        run: choco install ninja -y
+        run: |
+          choco install ninja -y
+          echo "C:\ProgramData\chocolatey\bin" >> $env:GITHUB_PATH
 
       # ------------------------------------------------------------
       # Toolchain verification
@@ -47,6 +49,7 @@ jobs:
           cmake --version
           ninja --version
           clang-cl --version
+          where ninja
 
       # ------------------------------------------------------------
       # Tag check
