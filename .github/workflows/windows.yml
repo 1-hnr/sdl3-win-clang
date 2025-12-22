@@ -34,10 +34,10 @@ jobs:
           version: latest
 
       # ------------------------------------------------------------
-      # CMake + Ninja
+      # Ninja
       # ------------------------------------------------------------
-      - name: Setup CMake and Ninja
-        uses: lukka/get-cmake@v3.31.6
+      - name: Install Ninja
+        run: choco install ninja -y
 
       # ------------------------------------------------------------
       # Toolchain verification
