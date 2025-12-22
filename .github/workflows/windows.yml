@@ -67,13 +67,7 @@ jobs:
       # Configure
       # ------------------------------------------------------------
       - name: Configure
-        shell: pwsh
-        run: |
-          cmake -S . -B build -G Ninja `
-            -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-clang-cl.cmake `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_INSTALL_PREFIX=install `
-            "-DSDL3_VERSION=${{ env.SDL_VERSION }}"
+        run: cmake -S . -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE="cmake/toolchain-clang-cl.cmake" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install "-DSDL3_VERSION=${{ env.SDL_VERSION }}"
 
       # ------------------------------------------------------------
       # Build
