@@ -1,0 +1,48 @@
+name: Build SDL3 (Windows, clang-cl)
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  SDL_VERSION: 3.2.1
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup clang
+        uses: egor-tensin/setup-clang@v1
+
+      - name: Verify tag matches SDL version
+        shell: pwsh
+        run: |
+          if (-not "${{ github.ref_name }}".StartsWith("v${{ env.SDL_VERSION }}+")) {
+            Write-Error "Tag must be v${{ env.SDL_VERSION }}+<rev>"
+          }
+
+      - name: Configure
+        run: >
+          cmake -B build -G Ninja
+          -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-clang-cl.cmake
+          -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Install
+        run: cmake --install build --prefix install
+
+      - name: Package
+        run: |
+          tar -caf sdl3-clang-win64.zip install
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: sdl3-clang-win64.zip
