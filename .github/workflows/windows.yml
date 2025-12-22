@@ -13,11 +13,13 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup clang
         uses: egor-tensin/setup-clang@v1
+
+      - name: Setup Ninja
+        uses: ashutoshvarma/setup-ninja@v1
 
       - name: Verify tag matches SDL version
         shell: pwsh
@@ -28,7 +30,8 @@ jobs:
 
       - name: Configure
         run: >
-          cmake -B build -G Ninja
+          cmake -S . -B build
+          -G Ninja
           -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-clang-cl.cmake
           -DCMAKE_BUILD_TYPE=Release
 
@@ -39,8 +42,7 @@ jobs:
         run: cmake --install build --prefix install
 
       - name: Package
-        run: |
-          tar -caf sdl3-clang-win64.zip install
+        run: tar -caf sdl3-clang-win64.zip install
 
       - name: Release
         uses: softprops/action-gh-release@v1
