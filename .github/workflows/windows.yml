@@ -69,30 +69,45 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
-      # 安装
-      - name: Install
+      # 收集产出物
+      - name: Collect artifacts
         run: |
           Write-Host "=== Build directory contents ==="
-          Get-ChildItem -Path build -Recurse -Include *.dll,*.lib,*.exe | Select-Object FullName
-          Write-Host ""
-          Write-Host "=== Running cmake install ==="
-          cmake --install build --prefix install --verbose
-          Write-Host ""
-          Write-Host "=== Install directory contents ==="
-          if (Test-Path install) {
-            Get-ChildItem -Path install -Recurse | Select-Object FullName
-          } else {
-            Write-Host "Install directory does not exist!"
+          Get-ChildItem -Path build -Recurse -Include *.dll,*.lib,*.pdb | Select-Object FullName
+
+          # 创建输出目录结构
+          New-Item -ItemType Directory -Path "dist/bin" -Force
+          New-Item -ItemType Directory -Path "dist/lib" -Force
+          New-Item -ItemType Directory -Path "dist/include" -Force
+
+          # 复制 DLL 和 PDB
+          Copy-Item -Path "build/*.dll" -Destination "dist/bin/" -Force -ErrorAction SilentlyContinue
+          Copy-Item -Path "build/*.pdb" -Destination "dist/bin/" -Force -ErrorAction SilentlyContinue
+
+          # 复制 LIB 文件
+          Copy-Item -Path "build/*.lib" -Destination "dist/lib/" -Force -ErrorAction SilentlyContinue
+
+          # 复制头文件 (从 FetchContent 下载的源码)
+          $sdl3Source = Get-ChildItem -Path "build/_deps/sdl3-src/include" -ErrorAction SilentlyContinue
+          if ($sdl3Source) {
+            Copy-Item -Path "build/_deps/sdl3-src/include/*" -Destination "dist/include/" -Recurse -Force
           }
+
+          # 也复制生成的头文件
+          if (Test-Path "build/include") {
+            Copy-Item -Path "build/include/*" -Destination "dist/include/" -Recurse -Force
+          }
+          if (Test-Path "build/include-config-release") {
+            Copy-Item -Path "build/include-config-release/*" -Destination "dist/include/" -Recurse -Force
+          }
+
+          Write-Host ""
+          Write-Host "=== Dist directory contents ==="
+          Get-ChildItem -Path dist -Recurse | Select-Object FullName
 
       # 打包
       - name: Package
-        run: |
-          if (-not (Test-Path install)) {
-            Write-Error "Install directory not found"
-            exit 1
-          }
-          Compress-Archive -Path install\* -DestinationPath sdl3-windows-clang-cl.zip -Force
+        run: Compress-Archive -Path dist\* -DestinationPath sdl3-windows-clang-cl.zip -Force
 
       # 上传 artifact
       - name: Upload Artifact
