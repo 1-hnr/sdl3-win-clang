@@ -93,4 +93,6 @@ cmake --install build --prefix install
 
 ## License
 
-SDL3 is licensed under the zlib license. See [SDL License](https://github.com/libsdl-org/SDL/blob/main/LICENSE.txt).
+This build configuration is licensed under the [MIT License](LICENSE).
+
+SDL3 itself is licensed under the zlib license. See [SDL License](https://github.com/libsdl-org/SDL/blob/main/LICENSE.txt).
