@@ -66,13 +66,27 @@ jobs:
       # 安装
       - name: Install
         run: |
-          cmake --install build --prefix install
+          Write-Host "=== Build directory contents ==="
+          Get-ChildItem -Path build -Recurse -Include *.dll,*.lib,*.exe | Select-Object FullName
+          Write-Host ""
+          Write-Host "=== Running cmake install ==="
+          cmake --install build --prefix install --verbose
+          Write-Host ""
           Write-Host "=== Install directory contents ==="
-          Get-ChildItem -Path install -Recurse | Select-Object FullName
+          if (Test-Path install) {
+            Get-ChildItem -Path install -Recurse | Select-Object FullName
+          } else {
+            Write-Host "Install directory does not exist!"
+          }
 
       # 打包
       - name: Package
-        run: Compress-Archive -Path install\* -DestinationPath sdl3-windows-clang-cl.zip
+        run: |
+          if (-not (Test-Path install)) {
+            Write-Error "Install directory not found"
+            exit 1
+          }
+          Compress-Archive -Path install\* -DestinationPath sdl3-windows-clang-cl.zip -Force
 
       # 上传 artifact
       - name: Upload Artifact
