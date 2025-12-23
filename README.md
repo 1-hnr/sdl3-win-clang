@@ -52,16 +52,30 @@ target_link_libraries(your_app PRIVATE SDL3::SDL3)
 ```
 install/
 ├── bin/
-│   └── SDL3.dll
+│   └── SDL3.dll              # 动态库运行时
 ├── lib/
-│   ├── SDL3.lib
+│   ├── SDL3.lib              # 动态库导入库
+│   ├── SDL3-static.lib       # 静态库
 │   └── cmake/SDL3/
 │       ├── SDL3Config.cmake
 │       ├── SDL3ConfigVersion.cmake
-│       └── SDL3Targets.cmake
+│       ├── SDL3sharedTargets.cmake
+│       └── SDL3staticTargets.cmake
 └── include/
     └── SDL3/
         └── *.h
+```
+
+## Linking
+
+**动态链接（推荐）：**
+```cmake
+target_link_libraries(your_app PRIVATE SDL3::SDL3-shared)
+```
+
+**静态链接：**
+```cmake
+target_link_libraries(your_app PRIVATE SDL3::SDL3-static)
 ```
 
 ## Building Locally

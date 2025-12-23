@@ -31,8 +31,8 @@ FetchContent_Declare(
 )
 
 # SDL3 build options (before FetchContent_MakeAvailable)
-set(SDL_SHARED ON CACHE BOOL "" FORCE)
-set(SDL_STATIC OFF CACHE BOOL "" FORCE)
+set(SDL_SHARED ON CACHE BOOL "" FORCE)  # 动态库 (SDL3.dll)
+set(SDL_STATIC ON CACHE BOOL "" FORCE)  # 静态库 (SDL3-static.lib)
 set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
 set(SDL_TESTS OFF CACHE BOOL "" FORCE)
 set(SDL_EXAMPLES OFF CACHE BOOL "" FORCE)
