@@ -6,16 +6,38 @@
 set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_PROCESSOR x86_64)
 
-# 使用 clang-cl（MSVC ABI）
-set(CMAKE_C_COMPILER   clang-cl)
-set(CMAKE_CXX_COMPILER clang-cl)
+# 编译器设置 - 仅在未通过命令行指定时设置默认值
+if(NOT DEFINED CMAKE_C_COMPILER)
+  find_program(CLANG_CL_PATH clang-cl
+    PATHS
+      "C:/Program Files/LLVM/bin"
+      "$ENV{LLVM_PATH}/bin"
+    NO_DEFAULT_PATH
+  )
+  if(CLANG_CL_PATH)
+    set(CMAKE_C_COMPILER "${CLANG_CL_PATH}")
+    set(CMAKE_CXX_COMPILER "${CLANG_CL_PATH}")
+  else()
+    # 回退到 PATH 中的 clang-cl
+    set(CMAKE_C_COMPILER clang-cl)
+    set(CMAKE_CXX_COMPILER clang-cl)
+  endif()
+endif()
 
-# 使用 lld-link（更快）
-set(CMAKE_LINKER lld-link)
+# 链接器 - lld-link 更快
+if(NOT DEFINED CMAKE_LINKER)
+  find_program(LLD_LINK_PATH lld-link
+    PATHS
+      "C:/Program Files/LLVM/bin"
+      "$ENV{LLVM_PATH}/bin"
+    NO_DEFAULT_PATH
+  )
+  if(LLD_LINK_PATH)
+    set(CMAKE_LINKER "${LLD_LINK_PATH}")
+  endif()
+endif()
 
-# MSVC runtime
-# MultiThreadedDLL = /MD
-# MultiThreaded    = /MT
+# MSVC runtime: /MD (MultiThreadedDLL)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 
 # 统一 UTF-8
@@ -34,25 +56,12 @@ add_compile_options(
   /Zc:__cplusplus
 )
 
-# 使用 clang-cl 风格的警告
-add_compile_options(
-  /W4
-)
+# 警告级别
+add_compile_options(/W4)
 
 # ------------------------------------------------------------
-# Search paths
+# Diagnostics
 # ------------------------------------------------------------
-
-# 不污染系统环境
-set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH OFF)
-
-# 确保能找到 Windows SDK / MSVC
-set(CMAKE_FIND_USE_PACKAGE_REGISTRY ON)
-
-# ------------------------------------------------------------
-# Diagnostics (helpful in CI)
-# ------------------------------------------------------------
-
 message(STATUS "Using clang-cl toolchain")
 message(STATUS "C compiler: ${CMAKE_C_COMPILER}")
 message(STATUS "CXX compiler: ${CMAKE_CXX_COMPILER}")

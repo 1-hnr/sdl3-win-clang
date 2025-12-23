@@ -5,109 +5,81 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
-    inputs:
-      sdl_version:
-        description: 'SDL3 version to build'
-        required: false
-        default: '3.2.1'
 
 env:
-  SDL_VERSION: 3.2.1
+  SDL_VERSION: "3.2.1"
+  LLVM_PATH: "C:/Program Files/LLVM"
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      # ------------------------------------------------------------
-      # Checkout
-      # ------------------------------------------------------------
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ------------------------------------------------------------
-      # clang / llvm
-      # ------------------------------------------------------------
-      - name: Setup LLVM (clang-cl)
-        uses: egor-tensin/setup-clang@v1
-        with:
-          version: latest
-
-      - name: Add LLVM to PATH
-        run: echo "C:\Program Files\LLVM\bin" >> $env:GITHUB_PATH
-
-      # ------------------------------------------------------------
-      # Ninja
-      # ------------------------------------------------------------
-      - name: Install Ninja
+      # 使用 chocolatey 安装 LLVM 和 Ninja
+      - name: Install LLVM and Ninja
         run: |
-          choco install ninja -y
-          echo "C:\ProgramData\chocolatey\bin" >> $env:GITHUB_PATH
+          choco install llvm ninja -y
+          echo "C:\Program Files\LLVM\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+          echo "C:\ProgramData\chocolatey\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
 
-      # ------------------------------------------------------------
-      # Toolchain verification
-      # ------------------------------------------------------------
-      - name: Toolchain versions
+      # 验证工具链
+      - name: Verify toolchain
         run: |
+          Write-Host "=== CMake ==="
           cmake --version
-          ninja --version
-          clang-cl --version
-          where ninja
+          Write-Host ""
+          Write-Host "=== Ninja ==="
+          & "C:\ProgramData\chocolatey\bin\ninja.exe" --version
+          Write-Host ""
+          Write-Host "=== Clang ==="
+          & "C:\Program Files\LLVM\bin\clang-cl.exe" --version
 
-      # ------------------------------------------------------------
-      # Tag check
-      # ------------------------------------------------------------
-      - name: Verify tag matches SDL version
+      # 验证 tag 格式
+      - name: Verify tag
         if: startsWith(github.ref, 'refs/tags/')
-        shell: pwsh
         run: |
           $tag = "${{ github.ref_name }}"
-          $expected = "v${{ env.SDL_VERSION }}+"
-          if (-not $tag.StartsWith($expected)) {
-            Write-Error "Tag '$tag' must start with '$expected'"
+          if (-not $tag.StartsWith("v${{ env.SDL_VERSION }}+")) {
+            Write-Error "Tag must match v${{ env.SDL_VERSION }}+N"
             exit 1
           }
-          Write-Host "Tag '$tag' is valid"
 
-      # ------------------------------------------------------------
-      # Configure
-      # ------------------------------------------------------------
+      # CMake 配置
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_MAKE_PROGRAM="C:/ProgramData/chocolatey/bin/ninja.exe" -DCMAKE_C_COMPILER="C:/Program Files/LLVM/bin/clang-cl.exe" -DCMAKE_CXX_COMPILER="C:/Program Files/LLVM/bin/clang-cl.exe" -DCMAKE_TOOLCHAIN_FILE="cmake/toolchain-clang-cl.cmake" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install "-DSDL3_VERSION=${{ env.SDL_VERSION }}"
+        run: |
+          cmake -S . -B build -G Ninja `
+            "-DCMAKE_MAKE_PROGRAM=C:/ProgramData/chocolatey/bin/ninja.exe" `
+            "-DCMAKE_C_COMPILER=C:/Program Files/LLVM/bin/clang-cl.exe" `
+            "-DCMAKE_CXX_COMPILER=C:/Program Files/LLVM/bin/clang-cl.exe" `
+            "-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-clang-cl.cmake" `
+            "-DCMAKE_BUILD_TYPE=Release" `
+            "-DCMAKE_INSTALL_PREFIX=install" `
+            "-DSDL3_VERSION=${{ env.SDL_VERSION }}"
 
-      # ------------------------------------------------------------
-      # Build
-      # ------------------------------------------------------------
+      # 构建
       - name: Build
         run: cmake --build build --config Release
 
-      # ------------------------------------------------------------
-      # Install
-      # ------------------------------------------------------------
+      # 安装
       - name: Install
         run: cmake --install build
 
-      # ------------------------------------------------------------
-      # Package
-      # ------------------------------------------------------------
+      # 打包
       - name: Package
-        run: |
-          cd install
-          tar -caf ../sdl3-windows-clang-cl.zip *
+        run: Compress-Archive -Path install\* -DestinationPath sdl3-windows-clang-cl.zip
 
-      # ------------------------------------------------------------
-      # Upload Artifact (for workflow_dispatch)
-      # ------------------------------------------------------------
+      # 上传 artifact
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: sdl3-windows-clang-cl
           path: sdl3-windows-clang-cl.zip
 
-      # ------------------------------------------------------------
-      # Release (only on tag push)
-      # ------------------------------------------------------------
-      - name: Upload Release Asset
+      # 发布 release
+      - name: Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
