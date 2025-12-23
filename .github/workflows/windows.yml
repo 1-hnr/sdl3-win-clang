@@ -65,14 +65,14 @@ jobs:
 
       # 安装
       - name: Install
-        run: cmake --install build
+        run: |
+          cmake --install build --prefix install
+          Write-Host "=== Install directory contents ==="
+          Get-ChildItem -Path install -Recurse | Select-Object FullName
 
       # 打包
       - name: Package
-        run: |
-          Write-Host "=== Install directory contents ==="
-          Get-ChildItem -Path install -Recurse | Select-Object FullName
-          Compress-Archive -Path "install/*" -DestinationPath sdl3-windows-clang-cl.zip
+        run: Compress-Archive -Path install\* -DestinationPath sdl3-windows-clang-cl.zip
 
       # 上传 artifact
       - name: Upload Artifact
