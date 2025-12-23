@@ -18,7 +18,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 使用 chocolatey 安装 LLVM 和 Ninja
+      # 初始化 MSVC 环境 (Windows SDK + 运行时)
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      # 安装 LLVM 和 Ninja
       - name: Install LLVM and Ninja
         run: |
           choco install llvm ninja -y
