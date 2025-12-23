@@ -15,8 +15,8 @@ Prebuilt SDL3 binaries for Windows using clang-cl compiler.
 Tag format: `v<SDL_VERSION>+<REV>`
 
 Examples:
-- `v3.2.1+1` - First build of SDL 3.2.1
-- `v3.2.1+2` - Second build (toolchain or config update)
+- `v3.2.28+1` - First build of SDL 3.2.28
+- `v3.2.28+2` - Second build (toolchain or config update)
 
 ## Download
 
@@ -31,7 +31,7 @@ include(FetchContent)
 
 FetchContent_Declare(
   sdl3
-  URL https://github.com/1-hnr/sdl3-win-clang/releases/download/v3.2.1+1/sdl3-windows-clang-cl.zip
+  URL https://github.com/1-hnr/sdl3-win-clang/releases/download/v3.2.28+1/sdl3-windows-clang-cl.zip
 )
 
 FetchContent_MakeAvailable(sdl3)

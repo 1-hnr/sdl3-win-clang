@@ -5,14 +5,14 @@ cmake_minimum_required(VERSION 3.24)
 # ------------------------------------------------------------
 project(
   SDL3-Build
-  VERSION 3.2.1
+  VERSION 3.2.28
   LANGUAGES C CXX
 )
 
 # ------------------------------------------------------------
 # Options
 # ------------------------------------------------------------
-set(SDL3_VERSION "3.2.1" CACHE STRING "SDL3 version to download")
+set(SDL3_VERSION "3.2.28" CACHE STRING "SDL3 version to download")
 
 # Default build type
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
