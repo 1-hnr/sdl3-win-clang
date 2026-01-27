@@ -104,6 +104,10 @@ jobs:
             Copy-Item -Path "build/include-config-release/*" -Destination "dist/include/" -Recurse -Force
           }
 
+          # 复制 CMake 辅助脚本
+          New-Item -ItemType Directory -Path "dist/cmake" -Force
+          Copy-Item -Path "cmake/source-index.cmake" -Destination "dist/cmake/" -Force
+
           Write-Host ""
           Write-Host "=== Dist directory contents ==="
           Get-ChildItem -Path dist -Recurse | Select-Object FullName

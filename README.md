@@ -50,32 +50,68 @@ target_link_libraries(your_app PRIVATE SDL3::SDL3)
 ## Package Contents
 
 ```
-install/
 ├── bin/
-│   └── SDL3.dll              # 动态库运行时
+│   └── SDL3.dll              # Runtime DLL
 ├── lib/
-│   ├── SDL3.lib              # 动态库导入库
-│   ├── SDL3-static.lib       # 静态库
+│   ├── SDL3.lib              # Import library
+│   ├── SDL3-static.lib       # Static library
 │   └── cmake/SDL3/
 │       ├── SDL3Config.cmake
-│       ├── SDL3ConfigVersion.cmake
-│       ├── SDL3sharedTargets.cmake
-│       └── SDL3staticTargets.cmake
-└── include/
-    └── SDL3/
-        └── *.h
+│       └── ...
+├── include/
+│   └── SDL3/
+│       └── *.h
+└── cmake/
+    └── source-index.cmake    # Source fetching helper
 ```
 
 ## Linking
 
-**动态链接（推荐）：**
+**Dynamic linking (recommended):**
 ```cmake
 target_link_libraries(your_app PRIVATE SDL3::SDL3-shared)
 ```
 
-**静态链接：**
+**Static linking:**
 ```cmake
 target_link_libraries(your_app PRIVATE SDL3::SDL3-static)
+```
+
+## Source Code Access
+
+This package contains only prebuilt binaries. For IDE code navigation and debugging:
+
+### Option A: Fetch source automatically
+
+```cmake
+FetchContent_MakeAvailable(sdl3)
+list(APPEND CMAKE_PREFIX_PATH ${sdl3_SOURCE_DIR})
+
+# Enable source fetching for IDE
+set(SDL3_FETCH_SOURCE ON)
+include(${sdl3_SOURCE_DIR}/cmake/source-index.cmake)
+
+find_package(SDL3 CONFIG REQUIRED)
+```
+
+### Option B: Clone source manually
+
+```bash
+git clone https://github.com/libsdl-org/SDL.git --branch release-3.2.28 --depth 1
+```
+
+### Option C: Build from source (full debugging)
+
+If you need full debugging support, use source compilation instead:
+
+```cmake
+FetchContent_Declare(
+  SDL3
+  GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+  GIT_TAG release-3.2.28
+)
+FetchContent_MakeAvailable(SDL3)
+target_link_libraries(your_app PRIVATE SDL3::SDL3)
 ```
 
 ## Building Locally
